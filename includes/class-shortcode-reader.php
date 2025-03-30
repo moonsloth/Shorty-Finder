@@ -46,7 +46,7 @@ class Shortcode_Reader {
             'tools.php',
             __( 'Shortcode Reader', 'shortcode-reader' ),
             __( 'Shortcode Reader', 'shortcode-reader' ),
-            'manage_options',
+            'manage_options', // Restrict to administrators
             'shortcode-reader',
             array( $this, 'render_admin_page' )
         );
@@ -101,6 +101,14 @@ class Shortcode_Reader {
      * @return void
      */
     public function render_admin_page() {
+        // Security check: Verify current user has permission
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'shortcode-reader' ) );
+        }
+        
+        // Add a nonce for CSRF protection
+        $nonce = wp_create_nonce( 'shortcode_reader_admin_nonce' );
+        
         // Get all available post types for filtering
         $post_types = get_post_types( array(
             'public' => true,
@@ -118,6 +126,9 @@ class Shortcode_Reader {
             <p><?php esc_html_e( 'Search for WordPress shortcodes in your content. Enter the complete shortcode including parameters (e.g. [gallery id=123]).', 'shortcode-reader' ); ?></p>
             
             <div class="shortcode-reader-search-container">
+                <!-- Hidden nonce field for CSRF protection -->
+                <input type="hidden" id="shortcode_reader_admin_nonce" name="shortcode_reader_admin_nonce" value="<?php echo esc_attr( $nonce ); ?>" />
+                
                 <div class="shortcode-reader-search-form">
                     <label for="shortcode-search" class="screen-reader-text"><?php esc_html_e( 'Enter shortcode to search for:', 'shortcode-reader' ); ?></label>
                     <input type="text" id="shortcode-search" name="shortcode-search" placeholder="<?php esc_attr_e( 'e.g. [gallery id=123]', 'shortcode-reader' ); ?>" class="regular-text">
@@ -153,6 +164,12 @@ class Shortcode_Reader {
      */
     public function ajax_shortcode_search() {
         try {
+            // Security check: Ensure user has permission to perform this action
+            if ( ! current_user_can( 'manage_options' ) ) {
+                wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'shortcode-reader' ) ) );
+                return;
+            }
+            
             // Get database connection
             global $wpdb;
             
@@ -176,12 +193,13 @@ class Shortcode_Reader {
                 wp_send_json_error( array( 'message' => __( 'Please enter a shortcode to search for.', 'shortcode-reader' ) ) );
             }
             
-            // Escape the shortcode for use in the query
-            $escaped_shortcode = '%' . $wpdb->esc_like( $shortcode ) . '%';
+            // Validate selected post types against registered post types for additional security
+            $valid_post_types = array_keys( get_post_types( array( 'public' => true ) ) );
+            $selected_post_types = array_intersect( $selected_post_types, $valid_post_types );
             
-            // Default to all public post types if none selected
+            // Default to all public post types if none selected or if none were valid
             if ( empty( $selected_post_types ) ) {
-                $selected_post_types = array_keys( get_post_types( array( 'public' => true ) ) );
+                $selected_post_types = $valid_post_types;
                 // Remove attachment post type
                 $attachment_key = array_search( 'attachment', $selected_post_types, true );
                 if ( false !== $attachment_key ) {
@@ -189,8 +207,18 @@ class Shortcode_Reader {
                 }
             }
             
-            // Prepare post types for the query
-            $post_types_string = "'" . implode( "','", array_map( 'esc_sql', $selected_post_types ) ) . "'";
+            // Escape the shortcode for use in the query
+            $escaped_shortcode = '%' . $wpdb->esc_like( $shortcode ) . '%';
+            
+            // Build a safer query for multiple post types
+            $placeholders = array_fill( 0, count( $selected_post_types ), '%s' );
+            $post_types_format = implode( ',', $placeholders );
+            
+            // Prepare parameters for the query
+            $query_params = array_merge( 
+                $selected_post_types,
+                array( $escaped_shortcode )
+            );
             
             // Search for the shortcode in post content
             $results = $wpdb->get_results(
@@ -198,9 +226,9 @@ class Shortcode_Reader {
                     "SELECT ID, post_title, post_type 
                      FROM {$wpdb->posts} 
                      WHERE post_status = 'publish' 
-                     AND post_type IN ({$post_types_string}) 
+                     AND post_type IN ($post_types_format) 
                      AND post_content LIKE %s",
-                    $escaped_shortcode
+                    ...$query_params
                 )
             );
             
@@ -232,7 +260,11 @@ class Shortcode_Reader {
                 'results' => $formatted_results,
             ) );
         } catch ( Exception $e ) {
-            wp_send_json_error( array( 'message' => 'Error: ' . $e->getMessage() ) );
+            // Log the error for admin reference (in a production environment)
+            error_log( 'Shortcode Reader Error: ' . $e->getMessage() );
+            
+            // Send a generic error message to avoid exposing sensitive information
+            wp_send_json_error( array( 'message' => __( 'An error occurred while processing your request.', 'shortcode-reader' ) ) );
         }
     }
 } 
