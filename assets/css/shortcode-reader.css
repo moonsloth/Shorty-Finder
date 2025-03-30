@@ -1,0 +1,101 @@
+/**
+ * Shortcode Reader Styles
+ */
+
+/* Main container */
+.shortcode-reader-wrap {
+    margin: 20px 0;
+}
+
+/* Search form */
+.shortcode-reader-search-container {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 3px;
+}
+
+.shortcode-reader-search-form {
+    margin-bottom: 20px;
+}
+
+#shortcode-search {
+    margin-right: 10px;
+    margin-bottom: 15px;
+    width: 350px;
+    max-width: 100%;
+}
+
+/* Filter section */
+.shortcode-reader-filters {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}
+
+.shortcode-reader-filters h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.shortcode-reader-post-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.shortcode-reader-post-types label {
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.shortcode-reader-post-types input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+/* Loading indicator */
+.shortcode-reader-loading {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+/* Results */
+.shortcode-reader-results {
+    margin-top: 20px;
+}
+
+.shortcode-reader-results-count {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.shortcode-reader-results table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.shortcode-reader-results th {
+    text-align: left;
+}
+
+.shortcode-reader-actions {
+    white-space: nowrap;
+}
+
+.shortcode-reader-actions .button {
+    margin-right: 5px;
+}
+
+/* Notice styling */
+.shortcode-reader-results .notice {
+    margin: 5px 0 15px;
+    padding: 1px 12px;
+} 
