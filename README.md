@@ -1,4 +1,4 @@
-# Shortcode Reader
+# Shorty Finder, a WordPress shortcode locator
 
 A WordPress plugin that allows you to search for shortcodes across your website content and find all pages where they are used.
 
@@ -12,7 +12,6 @@ Shortcode Reader helps you identify which pages, posts, or custom post types con
 - Filter search results by post type
 - Displays post title, type, and links to view or edit the content
 - Uses AJAX for smooth, responsive searches without page reloads
-- Secure implementation with proper validation and sanitization
 
 ## Installation
 
@@ -27,28 +26,6 @@ Shortcode Reader helps you identify which pages, posts, or custom post types con
 3. Optionally select which post types to include in the search
 4. Click the "Search" button
 5. View the results showing all pages where the shortcode is used
-
-## Security Features
-
-- Access restricted to administrators only (users with the `manage_options` capability)
-- Input sanitization for all form fields
-- Prepared SQL statements to prevent SQL injection
-- Nonce verification to prevent CSRF attacks
-- XSS protection through proper escaping of all output
-- Error logging for troubleshooting without exposing sensitive information
-
-## Troubleshooting
-
-### Plugin Causes Site to Load Endlessly
-
-If you experience the site loading endlessly after activating the plugin:
-
-1. Deactivate the plugin via FTP/SFTP 
-2. Access your WordPress admin area and make sure the plugin is deactivated
-3. Re-upload the plugin files
-4. Reactivate the plugin
-
-Note: This plugin is designed to work only in the WordPress admin area and should not affect your frontend pages.
 
 ### No Results Found
 
